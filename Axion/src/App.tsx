@@ -1,0 +1,1084 @@
+import { useState, useEffect, FormEvent } from "react";
+import {
+  ArrowRight,
+  Sparkles,
+  Cpu,
+  Database,
+  Package,
+  Code,
+  TrendingUp,
+  Factory,
+  LayoutGrid,
+  Truck,
+  GraduationCap,
+  Activity,
+  Rocket,
+  Building2,
+  Calendar,
+  Users,
+  ChevronRight,
+  Mail,
+  Phone,
+  MapPin,
+  CheckCircle2,
+  BookOpen,
+  Clock,
+  ExternalLink,
+  Quote,
+  Loader2
+} from "lucide-react";
+
+import { ActivePage, Language } from "./types";
+import {
+  translations,
+  servicesData,
+  industriesData,
+  caseStudiesData,
+  timelineEvents,
+  blogPosts
+} from "./data/mockData";
+
+// Modular corporate component imports
+import Header from "./components/Header";
+import Footer from "./components/Footer";
+import InteractiveMap from "./components/InteractiveMap";
+import DashboardPreview from "./components/DashboardPreview";
+import ArchitectureDiagram from "./components/ArchitectureDiagram";
+import ConsultationAssistant from "./components/ConsultationAssistant";
+import ROICalculator from "./components/ROICalculator";
+
+export default function App() {
+  const [activePage, setActivePage] = useState<ActivePage>("home");
+  const [language, setLanguage] = useState<Language>("en");
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  // Filter state for Portfolio page
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+
+  // Contact page form states
+  const [contactForm, setContactForm] = useState({
+    name: "",
+    email: "",
+    org: "",
+    need: "AI Automation",
+    msg: ""
+  });
+  const [contactSuccess, setContactSuccess] = useState(false);
+  const [contactLoading, setContactLoading] = useState(false);
+
+  const t = translations[language];
+
+  // Force scroll to top on section transitions
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [activePage]);
+
+  const handleContactSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    setContactLoading(true);
+    // Simulate real enterprise database insertion lag
+    setTimeout(() => {
+      setContactLoading(false);
+      setContactSuccess(true);
+      setContactForm({ name: "", email: "", org: "", need: "AI Automation", msg: "" });
+    }, 1500);
+  };
+
+  return (
+    <div
+      id="synapse-master-container"
+      className={`min-h-screen flex flex-col transition-colors duration-300 ${
+        isDarkMode ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-800"
+      }`}
+    >
+      {/* Global Header / Navbar */}
+      <Header
+        activePage={activePage}
+        setActivePage={setActivePage}
+        language={language}
+        setLanguage={setLanguage}
+        isDarkMode={isDarkMode}
+        setIsDarkMode={setIsDarkMode}
+      />
+
+      {/* Main Core View Area */}
+      <main id="view-backplane" className="flex-grow">
+        
+        {/* =========================================
+            SECTION 1: LANDING / HOME PAGE
+            ========================================= */}
+        {activePage === "home" && (
+          <div id="home-view" className="space-y-16 pb-16">
+            
+            {/* Hero Section */}
+            <section id="hero-core-panel" className="relative pt-20 pb-16 overflow-hidden">
+              {/* Abstract glowing backdrop accents */}
+              <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-brand-blue/15 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute top-10 left-10 w-[250px] h-[250px] bg-cyan-500/10 rounded-full blur-2xl pointer-events-none" />
+
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-brand-blue/20 bg-brand-blue/5 text-xs font-mono font-bold text-brand-blue-light mb-6">
+                  <Sparkles className="w-3.5 h-3.5 text-brand-gold animate-bounce" />
+                  Africa's Frontier Sovereign Technology Partner
+                </div>
+
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight font-display max-w-4xl mx-auto leading-tight">
+                  {t.heroTitle}
+                </h1>
+                
+                <p className={`text-base sm:text-lg max-w-2xl mx-auto mt-6 leading-relaxed ${
+                  isDarkMode ? "text-slate-400" : "text-slate-600"
+                }`}>
+                  {t.heroSub}
+                </p>
+
+                <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <button
+                    onClick={() => setActivePage("consultation-hub")}
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-sm bg-brand-blue hover:bg-brand-blue-light text-white shadow-xl shadow-brand-blue/15 hover:scale-[1.03] transition-all cursor-pointer"
+                  >
+                    <Sparkles className="w-4 h-4 text-brand-gold" />
+                    {t.ctaConsultation}
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setActivePage("services")}
+                    className={`w-full sm:w-auto px-8 py-4 rounded-xl font-bold text-sm border transition-all cursor-pointer ${
+                      isDarkMode
+                        ? "border-slate-800 text-slate-300 bg-slate-900/40 hover:bg-slate-900"
+                        : "border-slate-200 text-slate-700 bg-white hover:bg-slate-50"
+                    }`}
+                  >
+                    {t.ctaExplore}
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            {/* Live Operational Dashboard previews */}
+            <section id="live-dashboard-preview-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-10">
+                <span className="text-[10px] font-mono font-bold tracking-widest text-brand-blue-light uppercase block">
+                  Interactive Corporate Dashboard
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold font-display mt-1 text-white">
+                  Real-time Operational Telemetry
+                </h2>
+                <p className="text-slate-400 text-xs mt-2 max-w-md mx-auto">
+                  Fully operational, self-routing middleware syncing automated logistics and ledger states.
+                </p>
+              </div>
+              <DashboardPreview isDarkMode={isDarkMode} />
+            </section>
+
+            {/* Strategic Value Proposition Counters */}
+            <section id="corporate-impact-stats" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                {[
+                  { value: "45min", label: "Avg SLA Execution Time", desc: "Down from 4-day administrative logs" },
+                  { value: "$10M+", label: "Sovereign Logistics Friction Saved", desc: "Audit logs showing net client overhead savings" },
+                  { value: "100%", label: "SAP Ledger Integration Accuracy", desc: "Automated verification eliminates error buffers" },
+                  { value: "99.99%", label: "Cloud-Native Infrastructure SLA", desc: "Enterprise-grade high availability backplanes" }
+                ].map((stat, idx) => (
+                  <div
+                    key={idx}
+                    className={`p-6 rounded-xl border text-center ${
+                      isDarkMode ? "bg-slate-900/40 border-slate-800" : "bg-white border-slate-200 shadow-sm"
+                    }`}
+                  >
+                    <span className="text-3xl sm:text-4xl font-extrabold font-display text-brand-blue-light block">
+                      {stat.value}
+                    </span>
+                    <span className={`text-xs font-bold font-mono tracking-wide mt-2 block ${
+                      isDarkMode ? "text-slate-300" : "text-slate-800"
+                    }`}>
+                      {stat.label}
+                    </span>
+                    <span className="text-[10px] text-slate-500 mt-1.5 block leading-relaxed">
+                      {stat.desc}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Interactive Africa map Grid */}
+            <section id="sovereign-grid-telemetry" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-10">
+                <span className="text-[10px] font-mono font-bold tracking-widest text-brand-blue-light uppercase block">
+                  Continental Network
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold font-display mt-1 text-white">
+                  Sovereign Support Infrastructures
+                </h2>
+                <p className="text-slate-400 text-xs mt-2 max-w-md mx-auto">
+                  Trace our active operational nodes and backup data facilities across West, East, and Southern Africa.
+                </p>
+              </div>
+              <InteractiveMap isDarkMode={isDarkMode} />
+            </section>
+
+            {/* Interactive Process Pipeline Architecture */}
+            <section id="interactive-architecture-blueprint-block" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-10">
+                <span className="text-[10px] font-mono font-bold tracking-widest text-brand-blue-light uppercase block">
+                  Architecture
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold font-display mt-1 text-white">
+                  Corporate Process Automation Stack
+                </h2>
+                <p className="text-slate-400 text-xs mt-2 max-w-md mx-auto">
+                  Click on key systems below to analyze telemetry parameters of our secure data processing pipeline.
+                </p>
+              </div>
+              <ArchitectureDiagram isDarkMode={isDarkMode} />
+            </section>
+
+            {/* Client Testimonials */}
+            <section id="enterprise-testimonials" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <div className="text-center mb-12">
+                <span className="text-[10px] font-mono font-bold tracking-widest text-brand-blue-light uppercase block">
+                  Client Verifications
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold font-display mt-1 text-white">
+                  Trusted by Multi-National Operations
+                </h2>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {[
+                  {
+                    quote: "Synapse's custom automated invoice processor has completely transformed our finance division. We went from processing logs taking days down to minutes, while achieving zero ledger entry failures. They operate like IBM with Accenture speed.",
+                    author: "Musa Ibrahim, VP of Operations",
+                    company: "Zenith East Africa Distributors"
+                  },
+                  {
+                    quote: "Our cross-border distribution warehouse was plagued with manual stock reconciliations and spotty internet. Synapse engineered an offline-first tracking WMS that reduced border delays by 36 hours. Investor-ready digital consulting.",
+                    author: "Chidi Okoro, Chief Logistics Officer",
+                    company: "Safeland Freight Logistics"
+                  }
+                ].map((test, index) => (
+                  <div
+                    key={index}
+                    className={`p-8 rounded-2xl border relative flex flex-col justify-between ${
+                      isDarkMode ? "bg-slate-900/40 border-slate-800" : "bg-white border-slate-200 shadow-sm"
+                    }`}
+                  >
+                    <Quote className="absolute right-6 top-6 w-10 h-10 text-brand-blue/10 pointer-events-none" />
+                    <p className={`text-sm leading-relaxed italic mb-6 ${isDarkMode ? "text-slate-300" : "text-slate-700"}`}>
+                      "{test.quote}"
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue font-bold text-xs">
+                        {test.author.charAt(0)}
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-white font-display">{test.author}</h4>
+                        <span className="text-[10px] text-brand-blue-light font-mono block">{test.company}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Bottom mini Blog Preview */}
+            <section id="recent-insights" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+              <div className="flex justify-between items-end border-b border-slate-800/60 pb-4 mb-8">
+                <div>
+                  <span className="text-[10px] font-mono font-bold tracking-widest text-brand-blue-light uppercase block">
+                    Strategic Insights
+                  </span>
+                  <h2 className="text-xl sm:text-2xl font-bold font-display mt-0.5 text-white">
+                    Corporate Transformation Portals
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setActivePage("company")}
+                  className="text-xs font-mono font-bold text-brand-blue-light hover:text-brand-blue flex items-center gap-1 cursor-pointer"
+                >
+                  View Company Profile <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {blogPosts.map((post) => (
+                  <div
+                    key={post.id}
+                    className={`p-5 rounded-xl border flex flex-col justify-between ${
+                      isDarkMode ? "bg-slate-900/40 border-slate-800" : "bg-white border-slate-200"
+                    }`}
+                  >
+                    <div>
+                      <div className="flex justify-between items-center text-[10px] text-slate-500 font-mono mb-3">
+                        <span>{post.category}</span>
+                        <span>{post.readTime}</span>
+                      </div>
+                      <h4 className="text-sm font-bold leading-snug font-display text-white mb-2 line-clamp-2">
+                        {post.title}
+                      </h4>
+                      <p className={`text-xs line-clamp-3 leading-relaxed mb-4 ${
+                        isDarkMode ? "text-slate-400" : "text-slate-600"
+                      }`}>
+                        {post.excerpt}
+                      </p>
+                    </div>
+                    <span className="text-[10px] font-mono text-brand-blue-light block">
+                      Written by {post.author.split(",")[0]}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+          </div>
+        )}
+
+        {/* =========================================
+            SECTION 2: SERVICES VIEW
+            ========================================= */}
+        {activePage === "services" && (
+          <section id="services-detailed-matrix" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <span className="text-xs font-mono font-bold tracking-widest text-brand-blue-light uppercase block">
+                Enterprise Solutions Matrix
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold font-display mt-1 text-white">
+                Core Digital Transformation Capabilities
+              </h2>
+              <p className="text-slate-400 text-sm mt-3 leading-relaxed">
+                We orchestrate cloud infrastructure, cognitive models, and localized logic systems to help mid-to-large scale African enterprises digitize operational loops.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {servicesData.map((serv) => {
+                const isAI = serv.id === "ai-automation";
+                const isERP = serv.id === "erp-solutions";
+                return (
+                  <div
+                    key={serv.id}
+                    id={`service-card-${serv.id}`}
+                    className={`p-8 rounded-2xl border transition-all duration-300 flex flex-col justify-between group ${
+                      isDarkMode
+                        ? "bg-slate-900 border-slate-800 hover:border-slate-700/80"
+                        : "bg-white border-slate-200 shadow hover:shadow-lg"
+                    }`}
+                  >
+                    <div>
+                      <div className="flex justify-between items-start mb-6">
+                        <div className={`p-4 rounded-xl text-white bg-gradient-to-tr ${
+                          isAI ? "from-brand-blue to-cyan-500" : isERP ? "from-brand-gold to-yellow-600" : "from-brand-blue to-blue-800"
+                        }`}>
+                          {serv.icon === "Cpu" && <Cpu className="w-6 h-6" />}
+                          {serv.icon === "Database" && <Database className="w-6 h-6" />}
+                          {serv.icon === "Package" && <Package className="w-6 h-6" />}
+                          {serv.icon === "Code" && <Code className="w-6 h-6" />}
+                          {serv.icon === "TrendingUp" && <TrendingUp className="w-6 h-6" />}
+                        </div>
+                        <span className="text-[10px] font-mono tracking-widest uppercase bg-brand-blue/10 text-brand-blue-light border border-brand-blue/15 px-2.5 py-1 rounded font-bold">
+                          {serv.tag}
+                        </span>
+                      </div>
+
+                      <h3 className="text-xl font-bold font-display text-white mb-3">
+                        {serv.title}
+                      </h3>
+                      <p className={`text-xs leading-relaxed mb-6 ${
+                        isDarkMode ? "text-slate-400" : "text-slate-600"
+                      }`}>
+                        {serv.description}
+                      </p>
+
+                      <div className="border-t border-slate-800/50 pt-5 mb-6">
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-bold block mb-3">
+                          Architectural Scope
+                        </span>
+                        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                          {serv.details.map((detail, index) => (
+                            <li key={index} className="flex items-center gap-2 text-slate-300">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-brand-blue-light shrink-0" />
+                              <span className="line-clamp-1">{detail}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-slate-800/50 pt-5 flex items-center justify-between text-xs font-mono">
+                      <span className="text-slate-500">Target Efficiency ROI:</span>
+                      <span className="text-green-400 font-bold">{serv.metrics}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Interactive ROI Calculator Widget */}
+            <ROICalculator isDarkMode={isDarkMode} setActivePage={setActivePage} />
+
+            {/* AI Sandbox call-to-action bar */}
+            <div className="mt-16 bg-gradient-to-r from-slate-950 to-brand-navy border border-brand-blue/20 p-8 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6">
+              <div>
+                <h3 className="text-lg font-bold font-display text-white">
+                  Need a Customized Solution Design for Your Business?
+                </h3>
+                <p className="text-xs text-slate-400 mt-1 max-w-lg">
+                  Access our secure interactive digital transformation sandbox powered by Gemini. Generate a detailed, print-ready systems roadmap in seconds.
+                </p>
+              </div>
+              <button
+                onClick={() => setActivePage("consultation-hub")}
+                className="px-6 py-3 rounded-lg text-xs font-bold text-slate-950 bg-brand-gold hover:bg-yellow-400 cursor-pointer flex items-center gap-1.5 font-sans"
+              >
+                <Sparkles className="w-4 h-4 text-slate-950" />
+                Launch AI Blueprint Engine
+              </button>
+            </div>
+          </section>
+        )}
+
+        {/* =========================================
+            SECTION 3: INDUSTRIES SHOWCASE
+            ========================================= */}
+        {activePage === "industries" && (
+          <section id="target-industries-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <span className="text-xs font-mono font-bold tracking-widest text-brand-blue-light uppercase block">
+                Industry Solutions
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold font-display mt-1 text-white">
+                Engineered for Regional Scale
+              </h2>
+              <p className="text-slate-400 text-sm mt-3 leading-relaxed">
+                Every industry vertical has unique micro-conditions. We design system integrations that respect local supply structures, physical warehousing delays, and localized tax compliances.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {industriesData.map((ind) => {
+                return (
+                  <div
+                    key={ind.id}
+                    id={`industry-card-${ind.id}`}
+                    className={`p-6 rounded-2xl border flex flex-col justify-between ${
+                      isDarkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2.5 rounded-lg bg-brand-blue/10 text-brand-blue-light">
+                          {ind.icon === "Factory" && <Factory className="w-5 h-5" />}
+                          {ind.icon === "LayoutGrid" && <LayoutGrid className="w-5 h-5" />}
+                          {ind.icon === "Truck" && <Truck className="w-5 h-5" />}
+                          {ind.icon === "GraduationCap" && <GraduationCap className="w-5 h-5" />}
+                          {ind.icon === "Activity" && <Activity className="w-5 h-5" />}
+                          {ind.icon === "Rocket" && <Rocket className="w-5 h-5" />}
+                        </div>
+                        <h3 className="font-bold text-sm tracking-tight font-display text-white">
+                          {ind.title}
+                        </h3>
+                      </div>
+
+                      <p className={`text-xs leading-relaxed mb-4 ${
+                        isDarkMode ? "text-slate-400" : "text-slate-600"
+                      }`}>
+                        {ind.description}
+                      </p>
+
+                      <div className="bg-slate-950/40 rounded-lg p-3.5 border border-slate-800/40 mb-4">
+                        <span className="text-[10px] font-mono text-brand-gold uppercase tracking-wider block mb-1">
+                          Enterprise Case Study Preview:
+                        </span>
+                        <p className="text-[11px] leading-relaxed text-slate-300">
+                          {ind.detailedCase}
+                        </p>
+                      </div>
+
+                      <div className="mb-4">
+                        <span className="text-[10px] font-mono uppercase text-slate-500 block mb-1.5">Key Core Benefits:</span>
+                        <ul className="space-y-1.5 text-[11px]">
+                          {ind.keyBenefits.map((ben, i) => (
+                            <li key={i} className="flex items-center gap-1.5 text-slate-400">
+                              <span className="w-1.5 h-1.5 rounded-full bg-brand-blue-light" />
+                              {ben}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-slate-800/50 pt-4 mt-2 flex justify-between items-center text-xs font-mono">
+                      <span className="text-slate-500">Target Metric:</span>
+                      <span className="text-green-400 font-bold">{ind.stats}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* =========================================
+            SECTION 4: PORTFOLIO & CASE STUDIES
+            ========================================= */}
+        {activePage === "portfolio" && (
+          <section id="portfolio-case-studies" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="text-center max-w-3xl mx-auto mb-12">
+              <span className="text-xs font-mono font-bold tracking-widest text-brand-blue-light uppercase block">
+                Proven Deliveries
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold font-display mt-1 text-white">
+                Enterprise Business Case Studies
+              </h2>
+              <p className="text-slate-400 text-sm mt-3 leading-relaxed">
+                Quantitative reports detailing localized operational audits, solution system architectures, and client return on investments.
+              </p>
+            </div>
+
+            {/* Category Filter Pills */}
+            <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
+              {["All", "AI Automation", "ERP Solutions", "Warehouse Solutions"].map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-4 py-2 rounded-lg text-xs font-semibold tracking-wide uppercase transition-all ${
+                    selectedCategory === cat
+                      ? "bg-brand-blue text-white shadow"
+                      : isDarkMode
+                      ? "bg-slate-900 hover:bg-slate-800 text-slate-400"
+                      : "bg-slate-100 hover:bg-slate-200 text-slate-600"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            {/* Case Studies Grid */}
+            <div className="space-y-12">
+              {caseStudiesData
+                .filter((study) => selectedCategory === "All" || study.category === selectedCategory)
+                .map((study) => (
+                  <div
+                    key={study.id}
+                    id={`case-study-${study.id}`}
+                    className={`rounded-2xl border overflow-hidden grid grid-cols-1 lg:grid-cols-12 items-stretch ${
+                      isDarkMode ? "bg-slate-900/60 border-slate-800" : "bg-white border-slate-200 shadow"
+                    }`}
+                  >
+                    {/* Left Column: Visual graphic backdrop */}
+                    <div className="lg:col-span-5 relative min-h-[220px] bg-slate-950 overflow-hidden">
+                      <img
+                        src={study.image}
+                        alt={study.title}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-crop opacity-40 hover:scale-105 transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent lg:bg-gradient-to-r" />
+                      
+                      {/* Floating Key metric badge */}
+                      <div className="absolute bottom-6 left-6 p-4 rounded-xl bg-slate-950/90 border border-slate-800/80 backdrop-blur">
+                        <span className="text-3xl font-extrabold text-brand-gold font-mono block">
+                          {study.statValue}
+                        </span>
+                        <span className="text-[10px] text-slate-400 uppercase tracking-widest block font-mono">
+                          {study.statLabel}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Right Column: Case study description details */}
+                    <div className="lg:col-span-7 p-8 flex flex-col justify-between">
+                      <div>
+                        <div className="flex justify-between items-center pb-3 mb-4 border-b border-slate-800/50">
+                          <span className="text-xs font-mono uppercase text-brand-blue-light font-bold">
+                            Client: {study.client}
+                          </span>
+                          <span className="text-[10px] font-mono uppercase bg-brand-blue/10 border border-brand-blue/15 px-2 py-0.5 rounded text-brand-blue-light">
+                            {study.category}
+                          </span>
+                        </div>
+
+                        <h3 className="text-xl font-bold font-display text-white mb-4">
+                          {study.title}
+                        </h3>
+
+                        <div className="space-y-4 text-xs">
+                          <div>
+                            <span className="text-[10px] text-slate-500 uppercase tracking-wider font-mono block mb-1">
+                              Corporate Friction (The Problem)
+                            </span>
+                            <p className={`leading-relaxed ${isDarkMode ? "text-slate-300" : "text-slate-700"}`}>
+                              {study.problem}
+                            </p>
+                          </div>
+
+                          <div>
+                            <span className="text-[10px] text-slate-500 uppercase tracking-wider font-mono block mb-1">
+                              Solution Architecture Deployed
+                            </span>
+                            <p className={`leading-relaxed ${isDarkMode ? "text-slate-300" : "text-slate-700"}`}>
+                              {study.solution}
+                            </p>
+                          </div>
+
+                          <div>
+                            <span className="text-[10px] text-slate-500 uppercase tracking-wider font-mono block mb-1">
+                              Documented ROI (Business Impact)
+                            </span>
+                            <p className="leading-relaxed text-green-400 font-medium">
+                              {study.impact}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Tech stack badges */}
+                      <div className="border-t border-slate-800/50 pt-5 mt-6 flex flex-wrap items-center gap-2">
+                        <span className="text-[10px] font-mono text-slate-500 mr-2 uppercase">Tech Core:</span>
+                        {study.technologies.map((tech) => (
+                          <span
+                            key={tech}
+                            className="text-[10px] font-mono bg-slate-950 border border-slate-800 text-slate-400 px-2.5 py-1 rounded"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </section>
+        )}
+
+        {/* =========================================
+            SECTION 5: COMPANY VIEW
+            ========================================= */}
+        {activePage === "company" && (
+          <div id="company-profile" className="space-y-16 py-16 pb-20">
+            
+            {/* Mission / Vision banner */}
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+                
+                {/* Mission Card */}
+                <div className={`p-8 rounded-2xl border flex flex-col justify-between ${
+                  isDarkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"
+                }`}>
+                  <div>
+                    <div className="p-3 rounded-xl bg-brand-blue/10 text-brand-blue-light w-max mb-6">
+                      <Cpu className="w-8 h-8 text-brand-blue" />
+                    </div>
+                    <h3 className="text-2xl font-bold font-display text-white mb-4">
+                      {t.missionTitle}
+                    </h3>
+                    <p className={`text-sm leading-relaxed ${isDarkMode ? "text-slate-300" : "text-slate-700"}`}>
+                      {t.missionDesc}
+                    </p>
+                  </div>
+                  <span className="text-xs font-mono text-brand-blue-light uppercase tracking-widest mt-8 block">
+                    Established 2026
+                  </span>
+                </div>
+
+                {/* Vision Card */}
+                <div className={`p-8 rounded-2xl border flex flex-col justify-between ${
+                  isDarkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"
+                }`}>
+                  <div>
+                    <div className="p-3 rounded-xl bg-brand-gold/10 text-brand-gold w-max mb-6">
+                      <TrendingUp className="w-8 h-8 text-brand-gold" />
+                    </div>
+                    <h3 className="text-2xl font-bold font-display text-white mb-4">
+                      {t.visionTitle}
+                    </h3>
+                    <p className={`text-sm leading-relaxed ${isDarkMode ? "text-slate-300" : "text-slate-700"}`}>
+                      {t.visionDesc}
+                    </p>
+                  </div>
+                  <span className="text-xs font-mono text-brand-gold uppercase tracking-widest mt-8 block">
+                    Continental Focus 2030
+                  </span>
+                </div>
+
+              </div>
+            </section>
+
+            {/* Corporate values */}
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center max-w-3xl mx-auto mb-12">
+                <span className="text-xs font-mono font-bold tracking-widest text-brand-blue-light uppercase block">
+                  Corporate DNA
+                </span>
+                <h2 className="text-3xl font-extrabold font-display mt-1 text-white">
+                  {t.coreValuesTitle}
+                </h2>
+                <p className="text-slate-400 text-sm mt-2">
+                  {t.coreValuesSub}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                {[
+                  { title: "Innovation", icon: Rocket, desc: "Leveraging state-of-the-art cognitive models, offline-first networks, and microservice stacks." },
+                  { title: "Integrity", icon: CheckCircle2, desc: "Absolute compliance-ready ledger integrations with rigorous security, preventing errors." },
+                  { title: "Excellence", icon: Sparkles, desc: "Providing world-class SLA targets, robust documentation, and high-performance database writes." },
+                  { title: "Partnership", icon: Users, desc: "Operating as trusted advisors to regional ministries, manufacturers, and scale retail SME networks." },
+                  { title: "Continuous Learning", icon: GraduationCap, desc: "Iterating on modern data tools, custom protocols, and emerging continental trade policies." }
+                ].map((val, idx) => {
+                  const Icon = val.icon;
+                  return (
+                    <div
+                      key={idx}
+                      className={`p-6 rounded-xl border ${
+                        isDarkMode ? "bg-slate-900/40 border-slate-800" : "bg-white border-slate-200"
+                      }`}
+                    >
+                      <div className="p-2.5 rounded-lg bg-brand-blue/10 text-brand-blue-light w-max mb-4">
+                        <Icon className="w-5 h-5 text-brand-blue-light" />
+                      </div>
+                      <h4 className="font-bold text-sm tracking-tight font-display text-white mb-2">
+                        {val.title}
+                      </h4>
+                      <p className="text-xs text-slate-400 leading-relaxed">
+                        {val.desc}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
+          </div>
+        )}
+
+        {/* =========================================
+            SECTION 6: FUTURE VISION (TIMELINE)
+            ========================================= */}
+        {activePage === "timeline" && (
+          <section id="future-timeline-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <span className="text-xs font-mono font-bold tracking-widest text-brand-blue-light uppercase block">
+                Executive Roadmap
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold font-display mt-1 text-white">
+                Our Strategic Growth Timeline
+              </h2>
+              <p className="text-slate-400 text-sm mt-3 leading-relaxed">
+                Detailed micro-milestones and targets guiding Synapse Enterprise from regional consultancies to serving as the continental technology backplane.
+              </p>
+            </div>
+
+            {/* Vertical timeline flow */}
+            <div className="relative border-l border-slate-800 max-w-3xl mx-auto pl-8 space-y-12">
+              {timelineEvents.map((event, idx) => {
+                const isActive = event.year === "2026";
+                return (
+                  <div key={idx} className="relative">
+                    {/* Pulsing indicator node */}
+                    <div className={`absolute -left-[41px] top-1.5 w-6 h-6 rounded-full flex items-center justify-center border-2 ${
+                      isActive
+                        ? "bg-slate-950 border-brand-gold text-brand-gold"
+                        : "bg-slate-950 border-slate-800 text-slate-500"
+                    }`}>
+                      <div className={`w-2 h-2 rounded-full ${isActive ? "bg-brand-gold animate-pulse" : "bg-slate-800"}`} />
+                    </div>
+
+                    <div
+                      className={`p-6 rounded-2xl border ${
+                        isActive
+                          ? "bg-gradient-to-r from-slate-900 to-brand-navy border-brand-blue/30"
+                          : isDarkMode
+                          ? "bg-slate-900/55 border-slate-800"
+                          : "bg-white border-slate-200"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-800/50">
+                        <span className="text-2xl font-extrabold font-mono tracking-tight text-white block">
+                          {event.year}
+                        </span>
+                        <span className={`px-2.5 py-0.5 rounded text-[10px] font-mono ${
+                          isActive
+                            ? "bg-brand-gold/15 text-brand-gold font-bold border border-brand-gold/25"
+                            : isDarkMode
+                            ? "bg-slate-950 text-slate-400"
+                            : "bg-slate-100 text-slate-700"
+                        }`}>
+                          {event.status}
+                        </span>
+                      </div>
+
+                      <h3 className="text-base font-bold font-display text-white mb-2">
+                        {event.title}
+                      </h3>
+                      
+                      <p className={`text-xs leading-relaxed mb-4 ${
+                        isDarkMode ? "text-slate-400" : "text-slate-600"
+                      }`}>
+                        {event.description}
+                      </p>
+
+                      <div className="border-t border-slate-800/40 pt-4 mt-2 flex justify-between items-center text-xs font-mono">
+                        <span className="text-slate-500">Corporate KPI Target:</span>
+                        <span className="text-brand-blue-light font-bold">{event.metrics}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* =========================================
+            SECTION 7: CONTACT / MEETING VIEW
+            ========================================= */}
+        {activePage === "contact" && (
+          <section id="contact-advisory-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <span className="text-xs font-mono font-bold tracking-widest text-brand-blue-light uppercase block">
+                Initiate Engagement
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold font-display mt-1 text-white">
+                Consult with our Enterprise Advisors
+              </h2>
+              <p className="text-slate-400 text-sm mt-3 leading-relaxed">
+                Connect directly with our regional consulting units to plan custom system evaluations and digital transformation integrations.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-stretch">
+              
+              {/* Left Column: Form submissions */}
+              <div className="lg:col-span-7 flex">
+                <div className={`w-full rounded-2xl border p-8 flex flex-col justify-between ${
+                  isDarkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"
+                }`}>
+                  {contactSuccess ? (
+                    <div id="contact-success-banner" className="h-full flex flex-col items-center justify-center text-center py-12">
+                      <div className="w-16 h-16 rounded-full bg-emerald-500/15 border border-emerald-500/35 text-emerald-400 flex items-center justify-center mb-6">
+                        <CheckCircle2 className="w-8 h-8" />
+                      </div>
+                      <h3 className="text-xl font-bold font-display text-white">
+                        Consultation Request Logged
+                      </h3>
+                      <p className="text-xs text-slate-400 max-w-sm mt-2 leading-relaxed">
+                        Thank you for reaching out. A Senior Partner from our localized sector division will evaluate your bottleneck inputs and follow up within 24 business hours.
+                      </p>
+                      <button
+                        onClick={() => setContactSuccess(false)}
+                        className="mt-8 px-6 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold hover:bg-slate-700"
+                      >
+                        Submit another Inquiry
+                      </button>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleContactSubmit} className="space-y-5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                          <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-1.5">
+                            Your Name *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={contactForm.name}
+                            onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                            placeholder="e.g. Abdullahi Abubakar"
+                            className={`w-full px-3 py-2.5 text-xs rounded-lg border transition-colors outline-none ${
+                              isDarkMode
+                                ? "bg-slate-950 border-slate-800 text-white focus:border-brand-blue"
+                                : "bg-slate-50 border-slate-200 text-slate-800 focus:border-brand-blue"
+                            }`}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-1.5">
+                            Corporate Email *
+                          </label>
+                          <input
+                            type="email"
+                            required
+                            value={contactForm.email}
+                            onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                            placeholder="e.g. executive@yourcompany.com"
+                            className={`w-full px-3 py-2.5 text-xs rounded-lg border transition-colors outline-none ${
+                              isDarkMode
+                                ? "bg-slate-950 border-slate-800 text-white focus:border-brand-blue"
+                                : "bg-slate-50 border-slate-200 text-slate-800 focus:border-brand-blue"
+                            }`}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                          <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-1.5">
+                            Organization Name
+                          </label>
+                          <input
+                            type="text"
+                            value={contactForm.org}
+                            onChange={(e) => setContactForm({ ...contactForm, org: e.target.value })}
+                            placeholder="e.g. West African Mills Ltd"
+                            className={`w-full px-3 py-2.5 text-xs rounded-lg border transition-colors outline-none ${
+                              isDarkMode
+                                ? "bg-slate-950 border-slate-800 text-white focus:border-brand-blue"
+                                : "bg-slate-50 border-slate-200 text-slate-800 focus:border-brand-blue"
+                            }`}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-1.5">
+                            Primary System Focus
+                          </label>
+                          <select
+                            value={contactForm.need}
+                            onChange={(e) => setContactForm({ ...contactForm, need: e.target.value })}
+                            className={`w-full px-3 py-2.5 text-xs rounded-lg border transition-colors outline-none ${
+                              isDarkMode
+                                ? "bg-slate-950 border-slate-800 text-white focus:border-brand-blue"
+                                : "bg-slate-50 border-slate-200 text-slate-800 focus:border-brand-blue"
+                            }`}
+                          >
+                            <option value="AI Automation">AI Automation (OCR / Document parsing)</option>
+                            <option value="ERP Solutions">SAP Business One / ERP Integrations</option>
+                            <option value="Warehouse Solutions">Warehouse Tracking & WMS Platform</option>
+                            <option value="Software Engineering">Bespoke Enterprise Applications</option>
+                            <option value="Digital Transformation">Strategy & Data BI Analytics</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-1.5">
+                          Description of Bottleneck / Ingestion Scope *
+                        </label>
+                        <textarea
+                          required
+                          rows={4}
+                          value={contactForm.msg}
+                          onChange={(e) => setContactForm({ ...contactForm, msg: e.target.value })}
+                          placeholder="Provide details on manual repeat tasks, database sizes, or specific logistics delays you intend to resolve..."
+                          className={`w-full px-3 py-2.5 text-xs rounded-lg border transition-colors outline-none ${
+                            isDarkMode
+                              ? "bg-slate-950 border-slate-800 text-white focus:border-brand-blue"
+                              : "bg-slate-50 border-slate-200 text-slate-800 focus:border-brand-blue"
+                          }`}
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        id="submit-contact-form-btn"
+                        disabled={contactLoading}
+                        className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-xs text-white bg-brand-blue hover:bg-brand-blue-light transition-colors cursor-pointer"
+                      >
+                        {contactLoading ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin text-white" />
+                            <span>Routing Inquiry...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Submit Formal Inquiry Proposal</span>
+                            <ArrowRight className="w-4 h-4" />
+                          </>
+                        )}
+                      </button>
+                    </form>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column: Office coordinates directories */}
+              <div className="lg:col-span-5 h-full">
+                <div className="flex flex-col gap-6 h-full justify-between">
+                  
+                  {/* WhatsApp Hub Call-to-action */}
+                  <div className={`p-6 rounded-2xl border flex items-center gap-4 ${
+                    isDarkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"
+                  }`}>
+                    <div className="p-3 rounded-xl bg-green-500/10 text-green-400 flex items-center justify-center">
+                      {/* Standard Phone/Chat icon */}
+                      <Phone className="w-6 h-6 animate-pulse" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-extrabold uppercase font-mono tracking-wider text-slate-400">
+                        Rapid Direct Consulting Channel
+                      </h4>
+                      <h3 className="text-base font-bold text-white font-display mt-0.5">
+                        WhatsApp Live Link
+                      </h3>
+                      <a
+                        href="https://wa.me/234800SYNAPSE"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-brand-blue-light font-semibold hover:underline flex items-center gap-1 mt-1 font-mono"
+                      >
+                        Chat with our Desk Officer <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Locations List Directory */}
+                  <div className={`p-6 rounded-2xl border flex-grow ${
+                    isDarkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"
+                  }`}>
+                    <h3 className="text-base font-bold font-display text-white mb-4">
+                      Regional Support Directories
+                    </h3>
+                    
+                    <div className="space-y-4 text-xs">
+                      {[
+                        { city: "Lagos, Nigeria", role: "HQ & AI Ingress Core", address: "Twin Towers, Tower B, Level 14, Victoria Island" },
+                        { city: "Nairobi, Kenya", role: "East Africa Hub", address: "Landmark Plaza, Argwings Kodhek Road" },
+                        { city: "Johannesburg, South Africa", role: "Southern Africa Hub", address: "Capital Corporate Hill, Sandton" },
+                        { city: "Abidjan, Côte d'Ivoire", role: "Francophone Expansion Node", address: "Espace Avenue Boulevard, Plateau" },
+                        { city: "Kigali, Rwanda", role: "Sandbox & Research Node", address: "Kigali Heights, Level 4, Gasabo District" }
+                      ].map((loc, idx) => (
+                        <div key={idx} className="border-l-2 border-brand-blue-light pl-3">
+                          <h4 className="font-bold text-white tracking-tight">{loc.city}</h4>
+                          <span className="text-[10px] text-brand-gold font-mono uppercase block mt-0.5">{loc.role}</span>
+                          <span className="text-slate-400 text-[11px] block mt-1">{loc.address}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+          </section>
+        )}
+
+        {/* =========================================
+            SECTION 8: AI CONSULTATION HUB (SANDBOX)
+            ========================================= */}
+        {activePage === "consultation-hub" && (
+          <section id="ai-blueprint-hub" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <span className="text-xs font-mono font-bold tracking-widest text-brand-blue-light uppercase block">
+                Synapse Sandbox
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold font-display mt-1 text-white">
+                Sovereign AI Blueprint Hub
+              </h2>
+              <p className="text-slate-400 text-sm mt-3 leading-relaxed">
+                Connect directly with our secure, server-side AI solutions architect. Input localized bottleneck vectors to synthesize full technical roadmaps, compliant system scopes, and projected financial targets.
+              </p>
+            </div>
+
+            <ConsultationAssistant language={language} isDarkMode={isDarkMode} />
+          </section>
+        )}
+
+      </main>
+
+      {/* Global Footer */}
+      <Footer setActivePage={setActivePage} language={language} isDarkMode={isDarkMode} />
+    </div>
+  );
+}

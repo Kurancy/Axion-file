@@ -1,0 +1,6 @@
+{
+  "name": "Synapse Enterprise",
+  "description": "Africa's leading AI automation and digital transformation enterprise company. Providing world-class ERP, warehouse management, custom software, and intelligent AI consulting solutions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

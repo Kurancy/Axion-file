@@ -1,0 +1,6 @@
+{
+  "name": "Axion Donate",
+  "description": "Enterprise-quality donation platform with public campaign portal, direct bank/crypto transfer instructions, donor proof submission, and admin management dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
