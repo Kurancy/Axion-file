@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
@@ -10,6 +11,185 @@ dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// --- PERSISTENT CONVERSATION DATA STORE ---
+const DATA_FILE = path.join(__dirname, "conversations.json");
+const USERS_FILE = path.join(__dirname, "users.json");
+
+interface ChatMessage {
+  id: string;
+  sender: "visitor" | "admin" | "AI";
+  senderName: string;
+  text: string;
+  timestamp: string;
+}
+
+interface Conversation {
+  id: string;
+  visitorId: string;
+  visitorName: string;
+  topic: string;
+  createdAt: string;
+  updatedAt: string;
+  unread: boolean;
+  messages: ChatMessage[];
+}
+
+export type UserRole = "admin" | "employee" | "viewer";
+export type UserStatus = "active" | "suspended";
+
+export interface UserAccount {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  status: UserStatus;
+  password?: string;
+  lastActive: string;
+  createdAt: string;
+}
+
+const SEED_USERS: UserAccount[] = [
+  {
+    id: "u_admin_1",
+    name: "Alex Vance (System Lead)",
+    email: "admin@axion.ng",
+    role: "admin",
+    status: "active",
+    password: "axion2026",
+    lastActive: "Just now",
+    createdAt: new Date(Date.now() - 86400000 * 30).toISOString()
+  },
+  {
+    id: "u_emp_1",
+    name: "Fatima Bello (Senior Agent)",
+    email: "fatima@axion.ng",
+    role: "employee",
+    status: "active",
+    password: "axion123",
+    lastActive: "15 mins ago",
+    createdAt: new Date(Date.now() - 86400000 * 10).toISOString()
+  },
+  {
+    id: "u_emp_2",
+    name: "Musa Ibrahim (Support Specialist)",
+    email: "musa@axion.ng",
+    role: "employee",
+    status: "active",
+    password: "axion123",
+    lastActive: "1 hour ago",
+    createdAt: new Date(Date.now() - 86400000 * 5).toISOString()
+  },
+  {
+    id: "u_view_1",
+    name: "Auditor Sarah (Compliance)",
+    email: "auditor@axion.ng",
+    role: "viewer",
+    status: "active",
+    password: "axion123",
+    lastActive: " Yesterday",
+    createdAt: new Date(Date.now() - 86400000 * 2).toISOString()
+  }
+];
+
+function loadUsers(): UserAccount[] {
+  try {
+    if (fs.existsSync(USERS_FILE)) {
+      const data = fs.readFileSync(USERS_FILE, "utf-8");
+      return JSON.parse(data);
+    }
+  } catch (err) {
+    console.error("Error reading users.json, initializing default:", err);
+  }
+  saveUsers(SEED_USERS);
+  return SEED_USERS;
+}
+
+function saveUsers(users: UserAccount[]) {
+  try {
+    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), "utf-8");
+  } catch (err) {
+    console.error("Error saving users.json:", err);
+  }
+}
+
+let usersStore: UserAccount[] = loadUsers();
+
+const SEED_CONVERSATIONS: Conversation[] = [
+  {
+    id: "conv_seed_1",
+    visitorId: "v_musa_101",
+    visitorName: "Musa Ibrahim",
+    topic: "WMS & Logistics",
+    createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+    unread: true,
+    messages: [
+      {
+        id: "msg_s1_1",
+        sender: "visitor",
+        senderName: "Musa Ibrahim",
+        text: "Hello Axion team, we are experiencing stock reconciliation lags at our Nairobi fulfillment depot. Can you help us connect our SAP system to an offline-first WMS?",
+        timestamp: "08:30 AM"
+      },
+      {
+        id: "msg_s1_2",
+        sender: "AI",
+        senderName: "Axion AI Assistant",
+        text: "Hello Musa! Thank you for reaching out to Axion Technologies. Our Cognitive WMS solution integrates directly with SAP Business One and S/4HANA with offline synchronization. An enterprise advisor has been notified and will reply here shortly.",
+        timestamp: "08:30 AM"
+      }
+    ]
+  },
+  {
+    id: "conv_seed_2",
+    visitorId: "v_fatima_202",
+    visitorName: "Fatima Bello",
+    topic: "AI Automation",
+    createdAt: new Date(Date.now() - 3600000).toISOString(),
+    updatedAt: new Date(Date.now() - 1800000).toISOString(),
+    unread: false,
+    messages: [
+      {
+        id: "msg_s2_1",
+        sender: "visitor",
+        senderName: "Fatima Bello",
+        text: "Good morning. We need an automated OCR invoice extraction tool for our cross-border logistics company in Lagos.",
+        timestamp: "09:15 AM"
+      },
+      {
+        id: "msg_s2_2",
+        sender: "admin",
+        senderName: "Axion Lead Architect",
+        text: "Hi Fatima, we have pre-built document processing pipelines for West African port invoices. Would you be available for a 20-minute architecture review call today?",
+        timestamp: "09:18 AM"
+      }
+    ]
+  }
+];
+
+function loadConversations(): Conversation[] {
+  try {
+    if (fs.existsSync(DATA_FILE)) {
+      const data = fs.readFileSync(DATA_FILE, "utf-8");
+      return JSON.parse(data);
+    }
+  } catch (err) {
+    console.error("Error reading conversations.json, initializing default:", err);
+  }
+  saveConversations(SEED_CONVERSATIONS);
+  return SEED_CONVERSATIONS;
+}
+
+function saveConversations(conversations: Conversation[]) {
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(conversations, null, 2), "utf-8");
+  } catch (err) {
+    console.error("Error saving conversations.json:", err);
+  }
+}
+
+let conversationsStore: Conversation[] = loadConversations();
 
 async function startServer() {
   const app = express();
@@ -40,6 +220,250 @@ async function startServer() {
   // Health check
   app.get("/api/health", (req, res) => {
     res.json({ status: "healthy", timestamp: new Date().toISOString() });
+  });
+
+  // Admin / Staff Login Endpoint
+  app.post("/api/admin/login", (req, res) => {
+    const { accessCode, username, password } = req.body;
+
+    // Check Access Code
+    if (accessCode && (accessCode.trim() === "axion2026" || accessCode.trim() === "admin")) {
+      const defaultAdmin = usersStore.find(u => u.role === "admin") || usersStore[0];
+      defaultAdmin.lastActive = "Just now";
+      saveUsers(usersStore);
+      return res.json({
+        success: true,
+        token: "axion_admin_token_" + Date.now(),
+        user: defaultAdmin
+      });
+    }
+
+    // Check email/username & password against usersStore
+    const loginInput = (username || "").trim().toLowerCase();
+    const matchedUser = usersStore.find(
+      u => u.email.toLowerCase() === loginInput || u.name.toLowerCase().includes(loginInput)
+    );
+
+    if (matchedUser && matchedUser.password === password) {
+      if (matchedUser.status === "suspended") {
+        return res.status(403).json({ success: false, error: "Your account has been suspended by an administrator." });
+      }
+      matchedUser.lastActive = "Just now";
+      saveUsers(usersStore);
+      return res.json({
+        success: true,
+        token: "axion_user_token_" + Date.now(),
+        user: matchedUser
+      });
+    }
+
+    return res.status(401).json({ success: false, error: "Invalid credentials. Try access code: axion2026" });
+  });
+
+  // --- USER MANAGEMENT ENDPOINTS ---
+
+  // GET All Users
+  app.get("/api/users", (req, res) => {
+    res.json(usersStore);
+  });
+
+  // POST Create User
+  app.post("/api/users", (req, res) => {
+    const { name, email, role, password, status } = req.body;
+    if (!name || !email) {
+      return res.status(400).json({ error: "Name and email are required." });
+    }
+
+    const existing = usersStore.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
+    if (existing) {
+      return res.status(400).json({ error: "A user with this email address already exists." });
+    }
+
+    const newUser: UserAccount = {
+      id: "u_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+      name: name.trim(),
+      email: email.trim(),
+      role: role || "employee",
+      status: status || "active",
+      password: password || "axion123",
+      lastActive: "Never",
+      createdAt: new Date().toISOString()
+    };
+
+    usersStore.push(newUser);
+    saveUsers(usersStore);
+    res.json({ success: true, user: newUser });
+  });
+
+  // PUT Edit User
+  app.put("/api/users/:id", (req, res) => {
+    const { id } = req.params;
+    const { name, email, role, password, status } = req.body;
+
+    const user = usersStore.find(u => u.id === id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    if (name) user.name = name.trim();
+    if (email) user.email = email.trim();
+    if (role) user.role = role;
+    if (password) user.password = password;
+    if (status) user.status = status;
+
+    saveUsers(usersStore);
+    res.json({ success: true, user });
+  });
+
+  // DELETE User
+  app.delete("/api/users/:id", (req, res) => {
+    const { id } = req.params;
+    const index = usersStore.findIndex(u => u.id === id);
+    if (index === -1) {
+      return res.status(404).json({ error: "User not found." });
+    }
+    usersStore.splice(index, 1);
+    saveUsers(usersStore);
+    res.json({ success: true, message: "User deleted successfully." });
+  });
+
+  // GET All Conversations (For Admin Dashboard)
+  app.get("/api/conversations", (req, res) => {
+    // Return sorted by latest activity
+    const sorted = [...conversationsStore].sort(
+      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    );
+    res.json(sorted);
+  });
+
+  // GET Conversation by Visitor ID (For Public Chat Widget)
+  app.get("/api/conversations/visitor/:visitorId", (req, res) => {
+    const { visitorId } = req.params;
+    const conv = conversationsStore.find(c => c.visitorId === visitorId);
+    if (!conv) {
+      return res.json(null);
+    }
+    res.json(conv);
+  });
+
+  // GET Single Conversation by ID
+  app.get("/api/conversations/:id", (req, res) => {
+    const conv = conversationsStore.find(c => c.id === req.params.id);
+    if (!conv) {
+      return res.status(404).json({ error: "Conversation not found" });
+    }
+    res.json(conv);
+  });
+
+  // POST Visitor Message / Create or Update Conversation (Public Site)
+  app.post("/api/conversations", async (req, res) => {
+    const { visitorId, visitorName, topic, text } = req.body;
+    if (!visitorId || !text) {
+      return res.status(400).json({ error: "visitorId and text are required" });
+    }
+
+    const now = new Date();
+    const timeFormatted = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    let conv = conversationsStore.find(c => c.visitorId === visitorId);
+
+    const visitorMessage: ChatMessage = {
+      id: "msg_v_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+      sender: "visitor",
+      senderName: visitorName || (conv ? conv.visitorName : "Anonymous Visitor"),
+      text: text.trim(),
+      timestamp: timeFormatted
+    };
+
+    if (conv) {
+      if (visitorName) conv.visitorName = visitorName;
+      if (topic) conv.topic = topic;
+      conv.updatedAt = now.toISOString();
+      conv.unread = true; // Mark as unread for Admin
+      conv.messages.push(visitorMessage);
+    } else {
+      conv = {
+        id: "conv_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+        visitorId,
+        visitorName: visitorName || "Enterprise Visitor",
+        topic: topic || "General Inquiry",
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString(),
+        unread: true,
+        messages: [visitorMessage]
+      };
+      conversationsStore.push(conv);
+    }
+
+    // Optional: If first message or explicitly asked, add an initial AI greeting if no admin reply yet
+    if (conv.messages.length === 1) {
+      const aiReply: ChatMessage = {
+        id: "msg_ai_" + Date.now(),
+        sender: "AI",
+        senderName: "Axion AI Assistant",
+        text: `Thank you for reaching out to Axion Technologies, ${conv.visitorName}! Your message regarding "${conv.topic}" has been logged into our central portal. An enterprise advisor will reply to you shortly.`,
+        timestamp: timeFormatted
+      };
+      conv.messages.push(aiReply);
+    }
+
+    saveConversations(conversationsStore);
+    res.json({ success: true, conversation: conv });
+  });
+
+  // POST Admin Reply (Admin Site)
+  app.post("/api/conversations/:id/reply", (req, res) => {
+    const { id } = req.params;
+    const { text, senderName } = req.body;
+
+    if (!text || !text.trim()) {
+      return res.status(400).json({ error: "Reply text is required" });
+    }
+
+    const conv = conversationsStore.find(c => c.id === id);
+    if (!conv) {
+      return res.status(404).json({ error: "Conversation not found" });
+    }
+
+    const now = new Date();
+    const timeFormatted = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const adminMessage: ChatMessage = {
+      id: "msg_a_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+      sender: "admin",
+      senderName: senderName || "Axion Advisor",
+      text: text.trim(),
+      timestamp: timeFormatted
+    };
+
+    conv.messages.push(adminMessage);
+    conv.updatedAt = now.toISOString();
+    conv.unread = false; // Admin has read and replied
+
+    saveConversations(conversationsStore);
+    res.json({ success: true, conversation: conv });
+  });
+
+  // PATCH Mark Conversation as Read (Admin Site)
+  app.patch("/api/conversations/:id/read", (req, res) => {
+    const conv = conversationsStore.find(c => c.id === req.params.id);
+    if (!conv) {
+      return res.status(404).json({ error: "Conversation not found" });
+    }
+    conv.unread = false;
+    saveConversations(conversationsStore);
+    res.json({ success: true, conversation: conv });
+  });
+
+  // DELETE Conversation (Admin Action)
+  app.delete("/api/conversations/:id", (req, res) => {
+    const index = conversationsStore.findIndex(c => c.id === req.params.id);
+    if (index === -1) {
+      return res.status(404).json({ error: "Conversation not found" });
+    }
+    conversationsStore.splice(index, 1);
+    saveConversations(conversationsStore);
+    res.json({ success: true, message: "Conversation deleted" });
   });
 
   // Enterprise Digital Transformation Consultant Powered by Gemini

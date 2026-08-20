@@ -50,9 +50,47 @@ import AxionFavicon from "./components/AxionFavicon";
 import CaseStudyShowcase from "./components/CaseStudyShowcase";
 import SolutionsShowcase from "./components/SolutionsShowcase";
 import AxionAIAssistant from "./components/AxionAIAssistant";
+import LiveChatWidget from "./components/LiveChatWidget";
+import AdminPortal from "./components/AdminPortal";
 
 export default function App() {
-  const [activePage, setActivePage] = useState<ActivePage>("home");
+  const [activePage, setActivePageRaw] = useState<ActivePage>(() => {
+    if (typeof window !== "undefined") {
+      const hash = window.location.hash.replace("#", "");
+      if (hash === "admin") return "admin";
+      const saved = localStorage.getItem("axion_active_page");
+      if (saved && (saved === "admin" || saved === "home" || saved === "services" || saved === "industries" || saved === "solutions" || saved === "portfolio" || saved === "company" || saved === "timeline" || saved === "contact" || saved === "consultation-hub")) {
+        return saved as ActivePage;
+      }
+    }
+    return "home";
+  });
+
+  const setActivePage = (page: ActivePage) => {
+    setActivePageRaw(page);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("axion_active_page", page);
+      if (page === "admin") {
+        window.location.hash = "admin";
+      } else if (window.location.hash === "#admin") {
+        window.location.hash = "";
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace("#", "");
+      if (hash === "admin") {
+        setActivePageRaw("admin");
+      } else if (hash) {
+        setActivePageRaw(hash as ActivePage);
+      }
+    };
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
+
   const [language, setLanguage] = useState<Language>("en");
   const [isDarkMode, setIsDarkMode] = useState(true);
 
@@ -88,6 +126,10 @@ export default function App() {
       setContactForm({ name: "", email: "", org: "", need: "AI Automation", msg: "" });
     }, 1500);
   };
+
+  if (activePage === "admin") {
+    return <AdminPortal isDarkMode={isDarkMode} onExitAdmin={() => setActivePage("home")} />;
+  }
 
   return (
     <>
@@ -1244,7 +1286,7 @@ export default function App() {
       {/* Global Footer */}
       <Footer setActivePage={setActivePage} language={language} isDarkMode={isDarkMode} />
 
-      {/* World-Class Floating Enterprise AI Assistant */}
+      {/* World-Class Floating Enterprise AI Assistant (Unified Master Chat Widget) */}
       <AxionAIAssistant setActivePage={setActivePage} isDarkMode={isDarkMode} />
     </div>
     </>

@@ -1,0 +1,42 @@
+[
+  {
+    "id": "u_admin_1",
+    "name": "Alex Vance (System Lead)",
+    "email": "admin@axion.ng",
+    "role": "admin",
+    "status": "active",
+    "password": "admin@axion.ng",
+    "lastActive": "Just now",
+    "createdAt": "2026-07-21T11:02:20.643Z"
+  },
+  {
+    "id": "u_emp_1",
+    "name": "Fatima Bello (Senior Agent)",
+    "email": "fatima@axion.ng",
+    "role": "admin",
+    "status": "active",
+    "password": "123456",
+    "lastActive": "Just now",
+    "createdAt": "2026-08-10T11:02:20.644Z"
+  },
+  {
+    "id": "u_emp_2",
+    "name": "Musa Ibrahim (Support Specialist)",
+    "email": "musa@axion.ng",
+    "role": "employee",
+    "status": "active",
+    "password": "axion123",
+    "lastActive": "1 hour ago",
+    "createdAt": "2026-08-15T11:02:20.644Z"
+  },
+  {
+    "id": "u_view_1",
+    "name": "Auditor Sarah (Compliance)",
+    "email": "auditor@axion.ng",
+    "role": "viewer",
+    "status": "active",
+    "password": "axion123",
+    "lastActive": " Yesterday",
+    "createdAt": "2026-08-18T11:02:20.644Z"
+  }
+]

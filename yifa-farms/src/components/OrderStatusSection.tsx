@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { OrderStatusRecord } from '../types';
 import { useFarmConfig } from '../context/FarmConfigContext';
+import { useToast } from '../context/ToastContext';
 import { OrderStatusSkeleton } from './skeletons/LoadingSkeletons';
 import {
   Search,
@@ -19,6 +20,7 @@ import {
 
 export const OrderStatusSection: React.FC = () => {
   const { config, orders } = useFarmConfig();
+  const toast = useToast();
   const [query, setQuery] = useState<string>('YIFA-8421');
   const [searchedRecord, setSearchedRecord] = useState<OrderStatusRecord | null>(null);
   const [isSearching, setIsSearching] = useState<boolean>(true);
@@ -27,16 +29,19 @@ export const OrderStatusSection: React.FC = () => {
   // Initialize with first order if available
   useEffect(() => {
     if (orders.length > 0 && !searchedRecord) {
-      handleSearch(undefined, orders[0].id);
+      handleSearch(undefined, orders[0].id, false);
     } else {
       setIsSearching(false);
     }
   }, [orders]);
 
-  const handleSearch = (e?: React.FormEvent, explicitCode?: string) => {
+  const handleSearch = (e?: React.FormEvent, explicitCode?: string, showToastFeedback: boolean = true) => {
     if (e) e.preventDefault();
     const codeToSearch = (explicitCode || query).trim().toUpperCase();
-    if (!codeToSearch) return;
+    if (!codeToSearch) {
+      toast.error('Please enter an Invoice / Order reference code (e.g. YIFA-8421).', 'Missing Code');
+      return;
+    }
 
     setIsSearching(true);
     setTimeout(() => {
@@ -84,6 +89,10 @@ export const OrderStatusSection: React.FC = () => {
           vehicleNote: liveMatch.vehicleNote || 'Farm Dispatch Vehicle',
           paymentStatus: liveMatch.paymentStatus as any
         });
+
+        if (showToastFeedback) {
+          toast.success(`Found live dispatch status for Order #${liveMatch.id} (${stageName})`, 'Order Located');
+        }
       } else {
         // Fallback for custom code
         const stageNum: 1 | 2 | 3 | 4 = 2;
@@ -102,6 +111,10 @@ export const OrderStatusSection: React.FC = () => {
           vehicleNote: 'Farm Dispatch Vehicle',
           paymentStatus: 'Paid'
         });
+
+        if (showToastFeedback) {
+          toast.info(`Showing simulated dispatch batch for #${codeToSearch}`, 'Status Retrieved');
+        }
       }
       setIsSearching(false);
       setHasSearched(true);
@@ -133,22 +146,7 @@ export const OrderStatusSection: React.FC = () => {
       <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#D4AF37]/5 rounded-full blur-3xl pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-14">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <span className="h-[1px] w-6 bg-[#D4AF37]"></span>
-            <span className="text-[#D4AF37] text-xs font-bold tracking-[0.25em] uppercase">
-              Live Logistics & Dispatch Tracking
-            </span>
-            <span className="h-[1px] w-6 bg-[#D4AF37]"></span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#FDFBF5] tracking-tight uppercase">
-            Check Order & Delivery Status
-          </h2>
-          <p className="mt-3 text-base sm:text-lg text-[#FDFBF5]/75 leading-relaxed">
-            Enter your YIFA Farms invoice number or quote reference to track packing stages, Kaduna dispatch routes, and estimated delivery times.
-          </p>
-        </div>
+        
 
         {/* Search Bar & Quick Demo Chips */}
         <div className="max-w-3xl mx-auto mb-12">

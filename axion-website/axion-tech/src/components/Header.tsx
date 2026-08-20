@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Globe, Menu, X, ChevronDown, Zap } from "lucide-react";
+import { Globe, Menu, X, ChevronDown, Zap, Lock } from "lucide-react";
 import { ActivePage, Language } from "../types";
 import { translations } from "../data/mockData";
 import AxionLogo from "./AxionLogo";
@@ -172,6 +172,22 @@ export default function Header({
               )}
             </button>
 
+            {/* Admin Portal Button */}
+            <button
+              id="header-admin-btn"
+              onClick={() => setActivePage("admin")}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-mono font-semibold border transition-all cursor-pointer ${
+                activePage === "admin"
+                  ? "bg-blue-600 text-white border-blue-500 shadow-md"
+                  : isDarkMode
+                  ? "bg-slate-900/80 border-blue-900/50 text-blue-300 hover:bg-blue-950/60 hover:border-blue-700"
+                  : "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200"
+              }`}
+            >
+              <Lock className="w-3.5 h-3.5 text-blue-400" />
+              <span>Admin Portal</span>
+            </button>
+
             {/* Primary CTA */}
             <button
               id="header-cta-btn"
@@ -255,12 +271,21 @@ export default function Header({
                 ))}
               </div>
             </div>
-            <button
-              onClick={() => { setActivePage("consultation-hub"); setIsMobileMenuOpen(false); }}
-              className="btn-primary-axion w-full py-3.5 rounded-xl text-[14px] font-semibold text-white text-center"
-            >
-              {t.navConsultation}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setActivePage("admin"); setIsMobileMenuOpen(false); }}
+                className="flex-1 py-3 rounded-xl text-[13px] font-mono font-semibold text-blue-300 bg-slate-900 border border-blue-800 text-center flex items-center justify-center gap-1.5"
+              >
+                <Lock className="w-3.5 h-3.5 text-blue-400" />
+                <span>Admin Portal</span>
+              </button>
+              <button
+                onClick={() => { setActivePage("consultation-hub"); setIsMobileMenuOpen(false); }}
+                className="btn-primary-axion flex-1 py-3 rounded-xl text-[13px] font-semibold text-white text-center"
+              >
+                {t.navConsultation}
+              </button>
+            </div>
           </div>
         </div>
       )}

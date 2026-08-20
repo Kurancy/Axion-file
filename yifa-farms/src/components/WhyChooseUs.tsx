@@ -1,6 +1,7 @@
 import React from 'react';
 import { whyChooseUsData } from '../data/farmData';
 import { TestimonialCarousel } from './TestimonialCarousel';
+import { CustomerTestimonials } from './CustomerTestimonials';
 import { ShieldCheck, MapPin, Truck, SunMedium, Users, TrendingUp, CheckCircle2 } from 'lucide-react';
 
 export const WhyChooseUs: React.FC = () => {
@@ -30,19 +31,7 @@ export const WhyChooseUs: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 relative z-10">
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <span className="h-[1px] w-6 bg-[#D4AF37]"></span>
-            <span className="text-[#D4AF37] text-xs font-bold tracking-[0.25em] uppercase">Why Choose YIFA Farms</span>
-            <span className="h-[1px] w-6 bg-[#D4AF37]"></span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#FDFBF5] tracking-tight uppercase">
-            Built on Real Agricultural Standards
-          </h2>
-          <p className="mt-4 text-base sm:text-lg text-[#FDFBF5]/75 leading-relaxed">
-            We don’t rely on buzzwords or unverified marketing gimmicks. We rely on clean feed, biosecure animal husbandry, strict grading, and dependable customer relationships.
-          </p>
-        </div>
+        
 
         {/* 6 Core Pillars Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
@@ -73,6 +62,9 @@ export const WhyChooseUs: React.FC = () => {
 
         {/* Auto-playing Testimonial Carousel for Kaduna Caterers & Families */}
         <TestimonialCarousel />
+
+        {/* Full Community Review Feed with Photos and Ratings */}
+        <CustomerTestimonials />
 
         {/* Agribusiness verification banner */}
         <div className="mt-14 p-6 sm:p-8 rounded-3xl bg-[#0A2217] border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left shadow-2xl">

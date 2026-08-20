@@ -80,6 +80,14 @@ export default function Footer({ setActivePage, language, isDarkMode }: FooterPr
               ))}
               <li>
                 <button
+                  onClick={() => setActivePage("admin")}
+                  className="text-[13px] text-blue-400 hover:text-blue-300 font-semibold transition-colors text-left cursor-pointer flex items-center gap-1"
+                >
+                  Admin Portal (Shared Inbox) <ExternalLink className="w-3 h-3" />
+                </button>
+              </li>
+              <li>
+                <button
                   onClick={() => setActivePage("consultation-hub")}
                   className="text-[13px] text-blue-400 hover:text-blue-300 font-semibold transition-colors text-left cursor-pointer flex items-center gap-1"
                 >

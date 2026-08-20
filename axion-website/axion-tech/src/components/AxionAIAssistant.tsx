@@ -36,6 +36,7 @@ import {
   SUGGESTED_QUESTIONS,
   AxionAISuggestion
 } from "../services/axionAIService";
+import { getOrCreateVisitorSession } from "../utils/visitorSession";
 
 interface AxionAIAssistantProps {
   setActivePage?: (page: ActivePage) => void;
@@ -130,6 +131,19 @@ export default function AxionAIAssistant({
       textareaRef.current.style.height = "auto";
     }
 
+    // Sync with Admin Portal backend store
+    const session = getOrCreateVisitorSession();
+    fetch("/api/conversations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        visitorId: session.visitorId,
+        visitorName: session.visitorName,
+        topic: "Enterprise AI Query",
+        text: formattedUserText
+      })
+    }).catch(() => {});
+
     // Show Typing Indicator
     setIsTyping(true);
 
@@ -183,6 +197,7 @@ export default function AxionAIAssistant({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
+      e.stopPropagation();
       handleSendMessage();
     }
   };
@@ -239,7 +254,7 @@ export default function AxionAIAssistant({
       if (trimmed.startsWith("•") || trimmed.startsWith("-")) {
         const bulletContent = trimmed.substring(1).trim();
         return (
-          <div key={idx} className="flex items-start gap-2 my-1 text-slate-200 text-xs sm:text-sm">
+          <div key={idx} className="flex items-start gap-2 my-1 text-slate-200 text-[13px] leading-relaxed">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 shrink-0" />
             <span>{parseFormattedInlineText(bulletContent)}</span>
           </div>
@@ -248,7 +263,7 @@ export default function AxionAIAssistant({
 
       if (trimmed.length > 0 && /^\d+\./.test(trimmed)) {
         return (
-          <div key={idx} className="flex items-start gap-2 my-1.5 text-slate-200 text-xs sm:text-sm font-medium">
+          <div key={idx} className="flex items-start gap-2 my-1 text-slate-200 text-[13px] leading-relaxed font-medium">
             <span>{parseFormattedInlineText(trimmed)}</span>
           </div>
         );
@@ -256,13 +271,13 @@ export default function AxionAIAssistant({
 
       if (trimmed.length > 0) {
         return (
-          <p key={idx} className="my-1.5 leading-relaxed text-slate-200 text-xs sm:text-sm">
+          <p key={idx} className="my-1 leading-relaxed text-slate-200 text-[13px]">
             {parseFormattedInlineText(trimmed)}
           </p>
         );
       }
 
-      return <div key={idx} className="h-1.5" />;
+      return <div key={idx} className="h-1" />;
     });
   };
 
@@ -294,59 +309,57 @@ export default function AxionAIAssistant({
       {/* =========================================================
           FLOATING BUTTON (BOTTOM RIGHT)
           ========================================================= */}
+      {/* =========================================================
+          FLOATING BUTTON (BOTTOM RIGHT) - UNIFIED SINGLE ELEMENT
+          ========================================================= */}
       {!isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3">
-          {/* Breathing Tooltip */}
-          <motion.div
-            initial={{ opacity: 0, x: 10, scale: 0.95 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.4 }}
-            className="hidden sm:flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-slate-950/90 border border-blue-500/30 text-white backdrop-blur-md shadow-2xl shadow-blue-500/20"
+        <div className="fixed bottom-6 right-6 z-50">
+          <motion.button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsOpen(true);
+              setIsMinimized(false);
+            }}
+            onMouseEnter={() => setHasHoveredTrigger(true)}
+            onMouseLeave={() => setHasHoveredTrigger(false)}
+            whileHover={{ scale: 1.06 }}
+            whileTap={{ scale: 0.94 }}
+            animate={{
+              y: [0, -4, 0],
+            }}
+            transition={{
+              y: {
+                duration: 3.5,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }
+            }}
+            className="relative group p-3.5 sm:p-4 rounded-full bg-gradient-to-tr from-blue-700 via-blue-600 to-cyan-500 text-white shadow-[0_0_30px_rgba(37,99,235,0.45)] border border-blue-300/40 cursor-pointer flex items-center justify-center select-none"
+            aria-label="Open Axion AI Assistant"
           >
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500" />
-            </span>
-            <div className="flex flex-col text-left select-none">
+            {/* Background Glow */}
+            <div className="absolute inset-0 bg-blue-400/20 rounded-full blur-md group-hover:bg-blue-400/40 transition-all duration-300" />
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+
+            {/* Spark Icon + Online Badge */}
+            <div className="relative z-10 flex items-center justify-center">
+              <Sparkles className="w-6 h-6 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] animate-pulse" />
+              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border-2 border-[#070e1c]" />
+              </span>
+            </div>
+
+            {/* Hover Tooltip Label (Attached to the single launcher element) */}
+            <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-slate-950/95 border border-blue-500/30 text-white shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 translate-x-2 group-hover:translate-x-0 flex flex-col text-left whitespace-nowrap">
               <span className="text-[11px] font-bold font-display text-white leading-tight">
                 Axion AI
               </span>
               <span className="text-[9px] font-mono text-blue-300 leading-tight">
                 Enterprise Assistant
               </span>
-            </div>
-          </motion.div>
-
-          {/* Floating Action Trigger Button */}
-          <motion.button
-            onClick={() => {
-              setIsOpen(true);
-              setIsMinimized(false);
-            }}
-            onMouseEnter={() => setHasHoveredTrigger(true)}
-            onMouseLeave={() => setHasHoveredTrigger(false)}
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.92 }}
-            animate={{
-              y: [0, -6, 0],
-            }}
-            transition={{
-              y: {
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }
-            }}
-            className="relative group p-4 rounded-2xl bg-gradient-to-tr from-blue-700 via-blue-600 to-cyan-500 text-white shadow-[0_0_30px_rgba(37,99,235,0.45)] border border-blue-300/40 cursor-pointer flex items-center justify-center overflow-hidden"
-            aria-label="Open Axion AI Assistant"
-          >
-            {/* Background Glow Pulses */}
-            <div className="absolute inset-0 bg-blue-400/20 rounded-2xl blur-md group-hover:bg-blue-400/40 transition-all duration-300" />
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-
-            {/* Spark Icon */}
-            <div className="relative z-10 flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)] animate-pulse" />
             </div>
           </motion.button>
         </div>
@@ -361,8 +374,8 @@ export default function AxionAIAssistant({
           className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-[#081226]/95 border border-blue-500/30 text-white backdrop-blur-xl shadow-2xl shadow-blue-500/30 cursor-pointer"
           onClick={() => setIsMinimized(false)}
         >
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center border border-blue-400/30">
-            <Sparkles className="w-4 h-4 text-blue-200" />
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center border border-blue-400/30">
+            <Sparkles className="w-3.5 h-3.5 text-blue-200" />
           </div>
           <div className="flex flex-col text-left">
             <div className="flex items-center gap-2">
@@ -372,7 +385,9 @@ export default function AxionAIAssistant({
             <span className="text-[10px] text-slate-400 font-mono">Click to expand chat</span>
           </div>
           <button
+            type="button"
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
               setIsOpen(false);
             }}
@@ -393,10 +408,10 @@ export default function AxionAIAssistant({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 25 }}
             transition={{ type: "spring", stiffness: 300, damping: 26 }}
-            className={`fixed z-50 flex flex-col overflow-hidden rounded-3xl border border-blue-500/30 shadow-[0_20px_70px_rgba(0,0,0,0.8)] backdrop-blur-2xl transition-all duration-300 ${
+            className={`fixed z-50 flex flex-col overflow-hidden rounded-2xl sm:rounded-3xl border border-blue-500/30 shadow-[0_20px_70px_rgba(0,0,0,0.8)] backdrop-blur-2xl transition-all duration-300 ${
               isExpanded
-                ? "inset-4 sm:inset-8 md:inset-12 w-auto h-auto max-w-none max-h-none rounded-2xl bg-[#060c19]/95"
-                : "bottom-4 right-4 sm:bottom-6 sm:right-6 w-[calc(100vw-2rem)] sm:w-[460px] md:w-[480px] h-[640px] max-h-[calc(100vh-3rem)] bg-[#070e1c]/95"
+                ? "inset-3 sm:inset-6 md:inset-10 w-auto h-auto max-w-none max-h-none rounded-2xl bg-[#060c19]/95"
+                : "bottom-4 right-4 sm:bottom-6 sm:right-6 w-[calc(100vw-2rem)] sm:w-[410px] h-[550px] sm:h-[570px] max-h-[calc(100vh-3rem)] bg-[#070e1c]/95"
             }`}
           >
             {/* Dynamic Glassmorphism Background Accent Glows */}
@@ -407,30 +422,30 @@ export default function AxionAIAssistant({
             {/* ----------------------------------------------------
                 HEADER
                 ---------------------------------------------------- */}
-            <div className="relative z-10 px-5 py-4 border-b border-blue-500/20 bg-slate-900/60 backdrop-blur-md flex items-center justify-between">
+            <div className="relative z-10 px-4 py-3 border-b border-blue-500/20 bg-slate-900/60 backdrop-blur-md flex items-center justify-between">
               {/* Left Logo + Title + Status */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 <div className="relative">
-                  <div className="p-2 rounded-xl bg-gradient-to-tr from-blue-700 via-blue-600 to-cyan-500 border border-blue-300/30 shadow-lg shadow-blue-500/20">
-                    <Sparkles className="w-5 h-5 text-white animate-pulse" />
+                  <div className="p-1.5 rounded-xl bg-gradient-to-tr from-blue-700 via-blue-600 to-cyan-500 border border-blue-300/30 shadow-md shadow-blue-500/20">
+                    <Sparkles className="w-4 h-4 text-white animate-pulse" />
                   </div>
-                  <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#070e1c] shadow-[0_0_8px_#10b981]" />
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-[#070e1c] shadow-[0_0_6px_#10b981]" />
                 </div>
 
                 <div className="flex flex-col text-left select-none">
-                  <div className="flex items-center gap-2">
-                    <span className="font-display font-extrabold text-sm tracking-wider text-white">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-display font-bold text-xs tracking-wider text-white">
                       AXION AI
                     </span>
-                    <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 font-bold uppercase tracking-widest">
+                    <span className="text-[8px] font-mono px-1.5 py-0.2 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 font-bold uppercase tracking-widest">
                       Copilot
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     <span className="text-[10px] text-slate-400 font-sans">
-                      Enterprise Digital Transformation Advisor
+                      Enterprise Advisor
                     </span>
-                    <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1 font-semibold">
+                    <span className="text-[9px] text-emerald-400 font-mono flex items-center gap-1 font-semibold">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
                       Online
                     </span>
@@ -442,7 +457,12 @@ export default function AxionAIAssistant({
               <div className="flex items-center gap-1">
                 {messages.length > 0 && (
                   <button
-                    onClick={resetChat}
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      resetChat();
+                    }}
                     title="New Chat"
                     className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors"
                   >
@@ -450,21 +470,36 @@ export default function AxionAIAssistant({
                   </button>
                 )}
                 <button
-                  onClick={() => setIsMinimized(true)}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsMinimized(true);
+                  }}
                   title="Minimize"
                   className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors"
                 >
                   <Minus className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => setIsExpanded(!isExpanded)}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsExpanded(!isExpanded);
+                  }}
                   title={isExpanded ? "Restore" : "Expand"}
                   className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors"
                 >
                   {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                 </button>
                 <button
-                  onClick={() => setIsOpen(false)}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsOpen(false);
+                  }}
                   title="Close"
                   className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
                 >
@@ -481,73 +516,75 @@ export default function AxionAIAssistant({
               {/* WELCOME SCREEN (Shown when no messages yet) */}
               {messages.length === 0 && (
                 <motion.div
-                  initial={{ opacity: 0, y: 15 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4 }}
-                  className="space-y-6 py-4"
+                  transition={{ duration: 0.3 }}
+                  className="space-y-3 py-1"
                 >
-                  {/* Large Greeting Card */}
-                  <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-slate-900/90 via-[#0a162e]/80 to-slate-900/90 border border-blue-500/25 shadow-xl backdrop-blur-md relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
-                    
-                    <div className="flex items-center gap-3 mb-3">
-                      <AxionLogo showText={false} logoSize={32} />
-                      <span className="text-xs font-mono font-bold tracking-widest text-blue-400 uppercase">
+                  {/* Compact Greeting Card */}
+                  <div className="p-3.5 rounded-xl bg-gradient-to-br from-slate-900/90 via-[#0a162e]/90 to-slate-900/90 border border-blue-500/25 shadow-md backdrop-blur-md relative overflow-hidden">
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <AxionLogo showText={false} logoSize={22} />
+                        <h2 className="text-base font-bold font-display text-white tracking-tight">
+                          Hello 👋
+                        </h2>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full bg-blue-500/15 border border-blue-400/30 text-blue-300 text-[9px] font-mono font-bold uppercase tracking-wider">
                         Enterprise AI Core
                       </span>
                     </div>
 
-                    <h2 className="text-xl sm:text-2xl font-bold font-display text-white tracking-tight leading-snug">
-                      Hello 👋
-                    </h2>
-                    <p className="text-sm font-medium text-blue-200 mt-1">
-                      Welcome to Axion Technologies.
-                    </p>
-                    <p className="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed">
-                      I&apos;m <strong className="text-white">Axion AI</strong>. I&apos;m here to help you discover our enterprise solutions and answer questions about our company.
+                    <p className="text-xs text-slate-300 leading-snug">
+                      Hi, I&apos;m <strong className="text-white font-semibold">Axion AI</strong> — ask me about our enterprise solutions &amp; services.
                     </p>
 
-                    <div className="mt-4 pt-3 border-t border-blue-500/20 flex items-center justify-between text-[10px] font-mono text-slate-400">
-                      <span className="flex items-center gap-1 text-emerald-400">
-                        <ShieldCheck className="w-3.5 h-3.5" /> ISO 27001 Secured Channel
+                    <div className="mt-2 pt-2 border-t border-blue-500/20 flex items-center justify-between text-[10px] font-mono text-slate-400">
+                      <span className="flex items-center gap-1 text-emerald-400 font-medium">
+                        <ShieldCheck className="w-3 h-3" /> ISO 27001 Secured
                       </span>
-                      <span>v3.5 Enterprise</span>
+                      <span className="text-slate-500">v3.5 Enterprise</span>
                     </div>
                   </div>
 
-                  {/* SUGGESTED QUESTIONS HEADER & CARDS */}
+                  {/* SUGGESTED INQUIRIES HEADER & CARDS */}
                   <div>
-                    <div className="flex items-center gap-2 mb-3 px-1">
+                    <div className="flex items-center gap-1.5 mb-2 px-0.5">
                       <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-                      <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">
+                      <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">
                         Suggested Inquiries
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {SUGGESTED_QUESTIONS.map((sug, idx) => (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {SUGGESTED_QUESTIONS.slice(0, 6).map((sug, idx) => (
                         <motion.button
                           key={sug.id}
-                          initial={{ opacity: 0, y: 10 }}
+                          type="button"
+                          initial={{ opacity: 0, y: 6 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: idx * 0.04, duration: 0.3 }}
-                          onClick={() => handleSendMessage(sug.prompt)}
-                          whileHover={{ scale: 1.02, x: 2 }}
+                          transition={{ delay: idx * 0.03, duration: 0.2 }}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleSendMessage(sug.prompt);
+                          }}
+                          whileHover={{ scale: 1.01, x: 2 }}
                           whileTap={{ scale: 0.98 }}
-                          className="p-3 rounded-xl bg-slate-900/70 hover:bg-blue-950/60 border border-slate-800 hover:border-blue-500/40 text-left transition-all duration-200 group flex items-start gap-3 cursor-pointer shadow-sm"
+                          className="px-2.5 py-2 rounded-xl bg-slate-900/80 hover:bg-blue-950/70 border border-slate-800 hover:border-blue-500/40 text-left transition-all duration-200 group flex items-center gap-2 cursor-pointer shadow-xs"
                         >
-                          <div className="p-2 rounded-lg bg-slate-950 border border-slate-800 group-hover:border-blue-500/40 group-hover:bg-blue-900/30 transition-colors shrink-0">
+                          <div className="p-1.5 rounded-lg bg-slate-950 border border-slate-800 group-hover:border-blue-500/40 group-hover:bg-blue-900/30 transition-colors shrink-0">
                             {getSuggestionIcon(sug.iconName)}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <span className="text-xs font-semibold text-white group-hover:text-blue-200 transition-colors block truncate">
+                            <span className="text-[11px] font-semibold text-white group-hover:text-blue-200 transition-colors block truncate leading-tight">
                               {sug.title}
                             </span>
-                            <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
+                            <span className="text-[9px] text-slate-400 font-mono block truncate">
                               {sug.category}
                             </span>
                           </div>
-                          <ArrowUpRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5" />
+                          <ArrowUpRight className="w-3 h-3 text-slate-500 group-hover:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                         </motion.button>
                       ))}
                     </div>
@@ -570,15 +607,15 @@ export default function AxionAIAssistant({
                   >
                     {/* Assistant Avatar */}
                     {isAssistant && (
-                      <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-700 to-cyan-500 border border-blue-400/40 flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0 mt-1">
-                        <Bot className="w-4 h-4 text-white" />
+                      <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-blue-700 to-cyan-500 border border-blue-400/40 flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0 mt-0.5">
+                        <Bot className="w-3.5 h-3.5 text-white" />
                       </div>
                     )}
 
                     {/* Message Bubble Box */}
-                    <div className={`max-w-[85%] sm:max-w-[80%] ${isAssistant ? "text-left" : "text-right"}`}>
+                    <div className={`max-w-[85%] sm:max-w-[82%] ${isAssistant ? "text-left" : "text-right"}`}>
                       <div
-                        className={`p-4 rounded-2xl relative shadow-lg ${
+                        className={`p-3 rounded-xl relative shadow-lg ${
                           isAssistant
                             ? "bg-slate-900/85 border border-blue-500/25 text-slate-100 backdrop-blur-md rounded-tl-xs shadow-blue-950/40 border-l-4 border-l-blue-500"
                             : "bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-tr-xs shadow-blue-600/20 border border-blue-400/30"
@@ -586,14 +623,19 @@ export default function AxionAIAssistant({
                       >
                         {/* Header info / copy button */}
                         {isAssistant && (
-                          <div className="flex items-center justify-between mb-2 pb-1 border-b border-slate-800/60 text-[10px] text-slate-400 font-mono">
+                          <div className="flex items-center justify-between mb-1.5 pb-0.5 border-b border-slate-800/60 text-[9px] text-slate-400 font-mono">
                             <span className="font-bold text-blue-400">AXION AI</span>
                             <div className="flex items-center gap-2">
                               <span>{msg.timestamp}</span>
                               <button
-                                onClick={() => copyMessageText(msg.id, msg.text)}
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  copyMessageText(msg.id, msg.text);
+                                }}
                                 title="Copy response"
-                                className="p-1 hover:text-white transition-colors"
+                                className="p-0.5 hover:text-white transition-colors"
                               >
                                 {copiedId === msg.id ? (
                                   <Check className="w-3 h-3 text-emerald-400" />
@@ -610,7 +652,7 @@ export default function AxionAIAssistant({
                           {isAssistant ? (
                             renderMessageContent(msg.text)
                           ) : (
-                            <p className="text-xs sm:text-sm leading-relaxed text-white whitespace-pre-wrap">
+                            <p className="text-[13px] leading-relaxed text-white whitespace-pre-wrap">
                               {msg.text}
                             </p>
                           )}
@@ -618,21 +660,26 @@ export default function AxionAIAssistant({
                           {/* Streaming dots if active */}
                           {msg.isStreaming && !msg.text && (
                             <div className="flex items-center gap-1 py-1">
-                              <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-                              <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse delay-150" />
-                              <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse delay-300" />
+                              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse delay-150" />
+                              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse delay-300" />
                             </div>
                           )}
                         </div>
 
                         {/* Suggested Action Buttons (e.g. Navigation CTAs) */}
                         {isAssistant && msg.suggestedActions && msg.suggestedActions.length > 0 && (
-                          <div className="mt-3 pt-3 border-t border-slate-800/80 flex flex-wrap gap-2">
+                          <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex flex-wrap gap-1.5">
                             {msg.suggestedActions.map((act, idx) => (
                               <button
                                 key={idx}
-                                onClick={() => handleActionClick(act.action)}
-                                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-blue-300 bg-blue-950/60 hover:bg-blue-900 border border-blue-500/30 transition-all flex items-center gap-1.5 cursor-pointer"
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleActionClick(act.action);
+                                }}
+                                className="px-2.5 py-1 rounded-lg text-[11px] font-medium text-blue-300 bg-blue-950/60 hover:bg-blue-900 border border-blue-500/30 transition-all flex items-center gap-1 cursor-pointer"
                               >
                                 <span>{act.label}</span>
                                 <ArrowUpRight className="w-3 h-3 text-blue-400" />
@@ -644,7 +691,7 @@ export default function AxionAIAssistant({
 
                       {/* Timestamp for user messages */}
                       {!isAssistant && (
-                        <span className="text-[10px] text-slate-500 font-mono mt-1 inline-block pr-1">
+                        <span className="text-[9px] text-slate-500 font-mono mt-0.5 inline-block pr-1">
                           {msg.timestamp}
                         </span>
                       )}
@@ -652,8 +699,8 @@ export default function AxionAIAssistant({
 
                     {/* User Avatar */}
                     {!isAssistant && (
-                      <div className="w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0 mt-1">
-                        <User className="w-4 h-4 text-slate-300" />
+                      <div className="w-7 h-7 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0 mt-0.5">
+                        <User className="w-3.5 h-3.5 text-slate-300" />
                       </div>
                     )}
                   </motion.div>
@@ -697,7 +744,12 @@ export default function AxionAIAssistant({
                       <Paperclip className="w-3 h-3 text-blue-400" />
                       <span className="max-w-[120px] truncate">{fname}</span>
                       <button
-                        onClick={() => setAttachedFiles(attachedFiles.filter((_, idx) => idx !== i))}
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setAttachedFiles(attachedFiles.filter((_, idx) => idx !== i));
+                        }}
                         className="hover:text-white"
                       >
                         &times;
@@ -715,7 +767,12 @@ export default function AxionAIAssistant({
                     <span className="font-mono">Listening for voice prompt...</span>
                   </div>
                   <button
-                    onClick={toggleRecording}
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleRecording();
+                    }}
                     className="text-[10px] font-mono text-slate-400 hover:text-white uppercase"
                   >
                     Cancel
@@ -724,7 +781,14 @@ export default function AxionAIAssistant({
               )}
 
               {/* Input Form Box */}
-              <div className="flex items-end gap-2 p-2 rounded-2xl bg-slate-950 border border-slate-800 focus-within:border-blue-500/60 focus-within:shadow-[0_0_20px_rgba(59,130,246,0.25)] transition-all">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSendMessage();
+                }}
+                className="flex items-end gap-2 p-2 rounded-2xl bg-slate-950 border border-slate-800 focus-within:border-blue-500/60 focus-within:shadow-[0_0_20px_rgba(59,130,246,0.25)] transition-all"
+              >
                 {/* File Attachment Button */}
                 <button
                   type="button"
@@ -762,15 +826,15 @@ export default function AxionAIAssistant({
 
                 {/* Send Button */}
                 <motion.button
+                  type="submit"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => handleSendMessage()}
                   disabled={!inputValue.trim() && attachedFiles.length === 0}
                   className="p-2.5 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white shadow-lg shadow-blue-500/25 disabled:opacity-40 disabled:cursor-not-allowed transition-all shrink-0 cursor-pointer"
                 >
                   <Send className="w-4 h-4" />
                 </motion.button>
-              </div>
+              </form>
 
               {/* Sub-text footer */}
               <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500 font-mono px-1">
